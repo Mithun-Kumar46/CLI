@@ -1,0 +1,41 @@
+##launch an EC2 instance:
+
+aws ec2 run-instances \
+  --image-id ami-0abcdef1234567890 \
+  --count 1 \
+  --instance-type t2.micro \
+  --key-name MyKeyPair \
+  --security-groups MySecurityGroup
+
+##Create a security group
+  aws ec2 create-security-group \
+  --group-name WebSG \
+  --description "Allow HTTP and SSH"
+
+##Add inbound rules
+aws ec2 authorize-security-group-ingress \
+  --group-name WebSG \
+  --protocol tcp \
+  --port 22 \
+  --cidr 0.0.0.0/0
+
+aws ec2 authorize-security-group-ingress \
+  --group-name WebSG \
+  --protocol tcp \
+  --port 80 \
+  --cidr 0.0.0.0/0
+
+##Launch EC2 with user data (Apache install)
+aws ec2 run-instances \
+  --image-id ami-0abcdef1234567890 \
+  --count 1 \
+  --instance-type t2.micro \
+  --key-name MyKeyPair \
+  --security-groups WebSG \
+  --user-data file://install-apache.sh
+
+#!/bin/bash
+yum update -y
+yum install httpd -y
+systemctl start httpd
+systemctl enable httpd
